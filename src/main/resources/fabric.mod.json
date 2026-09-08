@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "dynamic-join-greetings",
+	"version": "${version}",
+	"name": "Dynamic Join Greetings",
+	"description": "Randomized and configurable first-time and returning-player greetings for Fabric servers.",
+	"authors": [
+		"SwornHero"
+	],
+	"license": "MIT",
+	"icon": "assets/dynamic-join-greetings/icon.png",
+	"environment": "server",
+	"entrypoints": {
+		"main": [
+			"com.swornhero.dynamicjoingreetings.DynamicJoinGreetings"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
