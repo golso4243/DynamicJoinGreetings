@@ -31,7 +31,7 @@ public final class ConfigManager {
     private ConfigManager() {
     }
 
-    public static synchronized void load() {
+    public static synchronized boolean load() {
         try {
             Files.createDirectories(CONFIG_PATH.getParent());
 
@@ -46,7 +46,8 @@ public final class ConfigManager {
                         "Created default configuration at {}.",
                         CONFIG_PATH
                 );
-                return;
+
+                return true;
             }
 
             DynamicJoinGreetingsConfig loadedConfig;
@@ -68,6 +69,8 @@ public final class ConfigManager {
                     "Loaded configuration from {}.",
                     CONFIG_PATH
             );
+
+            return true;
         } catch (Exception exception) {
             DynamicJoinGreetings.LOGGER.error(
                     "Could not load configuration from {}. "
@@ -75,6 +78,8 @@ public final class ConfigManager {
                     CONFIG_PATH,
                     exception
             );
+
+            return false;
         }
     }
 

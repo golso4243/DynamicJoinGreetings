@@ -13,6 +13,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.server.level.ServerPlayer;
+import com.swornhero.dynamicjoingreetings.message.MessageSelector;
 
 public final class JoinGreetingsCommands {
     private JoinGreetingsCommands() {
@@ -43,8 +44,41 @@ public final class JoinGreetingsCommands {
                                                                         )
                                                         )
                                         )
+                                        .then(
+                                                Commands.literal("reload")
+                                                        .executes(JoinGreetingsCommands::reload)
+                                        )
                         )
         );
+    }
+
+    private static int reload(
+            CommandContext<CommandSourceStack> context
+    ) {
+        boolean successful = ConfigManager.load();
+
+        if (!successful) {
+            context.getSource().sendFailure(
+                    net.minecraft.network.chat.Component.literal(
+                            "Dynamic Join Greetings could not reload. "
+                                    + "The previous configuration remains active. "
+                                    + "Check the server console for details."
+                    )
+            );
+
+            return 0;
+        }
+
+        MessageSelector.clear();
+
+        context.getSource().sendSuccess(
+                () -> net.minecraft.network.chat.Component.literal(
+                        "Dynamic Join Greetings configuration reloaded."
+                ),
+                false
+        );
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int preview(
