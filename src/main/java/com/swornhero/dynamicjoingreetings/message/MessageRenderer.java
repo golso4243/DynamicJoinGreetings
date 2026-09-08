@@ -6,12 +6,41 @@ import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 
 public final class MessageRenderer {
-    private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
+    private static final MiniMessage MINI_MESSAGE =
+            MiniMessage.miniMessage();
+
+    private static final MiniMessage STRICT_MINI_MESSAGE =
+            MiniMessage.builder()
+                    .strict(true)
+                    .build();
 
     private MessageRenderer() {
     }
 
     public static Component render(
+            String template,
+            String playerName,
+            String serverName
+    ) {
+        return deserialize(
+                MINI_MESSAGE,
+                template,
+                playerName,
+                serverName
+        );
+    }
+
+    public static void validate(String template) {
+        deserialize(
+                STRICT_MINI_MESSAGE,
+                template,
+                "Player",
+                "Minecraft Server"
+        );
+    }
+
+    private static Component deserialize(
+            MiniMessage miniMessage,
             String template,
             String playerName,
             String serverName
@@ -31,6 +60,9 @@ public final class MessageRenderer {
                 ))
                 .build();
 
-        return MINI_MESSAGE.deserialize(preparedTemplate, placeholders);
+        return miniMessage.deserialize(
+                preparedTemplate,
+                placeholders
+        );
     }
 }

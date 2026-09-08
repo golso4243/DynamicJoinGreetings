@@ -3,6 +3,7 @@ package com.swornhero.dynamicjoingreetings.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.swornhero.dynamicjoingreetings.DynamicJoinGreetings;
+import com.swornhero.dynamicjoingreetings.message.MessageRenderer;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.Reader;
@@ -215,11 +216,27 @@ public final class ConfigManager {
                 );
             }
 
-            for (String line : message.lines) {
+            for (int lineIndex = 0;
+                 lineIndex < message.lines.size();
+                 lineIndex++) {
+                String line = message.lines.get(lineIndex);
+
                 if (line == null) {
                     throw new IllegalArgumentException(
                             poolName + "." + message.id
                                     + " contains a null line."
+                    );
+                }
+
+                try {
+                    MessageRenderer.validate(line);
+                } catch (RuntimeException exception) {
+                    throw new IllegalArgumentException(
+                            poolName + "." + message.id
+                                    + ".lines[" + lineIndex + "]"
+                                    + " contains invalid MiniMessage formatting: "
+                                    + exception.getMessage(),
+                            exception
                     );
                 }
             }
