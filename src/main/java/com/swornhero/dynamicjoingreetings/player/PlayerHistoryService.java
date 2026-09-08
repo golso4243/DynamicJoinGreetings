@@ -3,7 +3,6 @@ package com.swornhero.dynamicjoingreetings.player;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
 import org.slf4j.Logger;
@@ -43,25 +42,19 @@ public final class PlayerHistoryService {
                 instance = load(server)
         );
 
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            if (instance == null) {
-                LOGGER.error("Player history was not initialized");
-                return;
-            }
-
-            UUID playerId = handler.player.getUUID();
-            boolean firstJoin = instance.markSeen(playerId);
-
-            LOGGER.info(
-                    "{} joined as a {} player",
-                    handler.player.getName().getString(),
-                    firstJoin ? "first-time" : "returning"
-            );
-        });
-
         ServerLifecycleEvents.SERVER_STOPPED.register(server ->
                 instance = null
         );
+    }
+
+    public static boolean recordJoin(UUID playerId) {
+        if (instance == null) {
+            throw new IllegalStateException(
+                    "Player history has not been initialized"
+            );
+        }
+
+        return instance.markSeen(playerId);
     }
 
     /**
