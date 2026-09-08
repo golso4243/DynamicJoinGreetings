@@ -1,5 +1,6 @@
 package com.swornhero.dynamicjoingreetings;
 import com.swornhero.dynamicjoingreetings.config.ConfigManager;
+import com.swornhero.dynamicjoingreetings.command.JoinGreetingsCommands;
 
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.resources.Identifier;
@@ -13,6 +14,7 @@ public final class DynamicJoinGreetings implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ConfigManager.load();
+		JoinGreetingsCommands.register();
 		LOGGER.info("Dynamic Join Greetings initialized.");
 	}
 
