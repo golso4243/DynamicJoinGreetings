@@ -77,36 +77,61 @@ public final class PlayerHistoryService {
 
     private static PlayerHistoryService load(MinecraftServer server) {
         Path worldRoot = server.getWorldPath(LevelResource.ROOT);
-        Path dataDirectory = worldRoot.resolve("dynamic-join-greetings");
-        Path historyFile = dataDirectory.resolve("players.json");
+        Path dataDirectory =
+                worldRoot.resolve("dynamic-join-greetings");
+
+        Path historyFile =
+                dataDirectory.resolve("players.json");
 
         try {
             Files.createDirectories(dataDirectory);
 
             if (Files.exists(historyFile)) {
-                HistoryData data = GSON.fromJson(
-                        Files.readString(historyFile, StandardCharsets.UTF_8),
-                        HistoryData.class
-                );
+                try {
+                    HistoryData data = GSON.fromJson(
+                            Files.readString(
+                                    historyFile,
+                                    StandardCharsets.UTF_8
+                            ),
+                            HistoryData.class
+                    );
 
-                Set<UUID> players =
-                        data != null && data.players != null
-                                ? data.players
-                                : new HashSet<>();
+                    validateHistoryData(data);
 
-                LOGGER.info(
-                        "Loaded {} known player UUIDs",
-                        players.size()
-                );
+                    Set<UUID> players =
+                            new HashSet<>(data.players);
 
-                return new PlayerHistoryService(historyFile, players);
+                    LOGGER.info(
+                            "Loaded {} known player UUIDs",
+                            players.size()
+                    );
+
+                    return new PlayerHistoryService(
+                            historyFile,
+                            players
+                    );
+                } catch (Exception exception) {
+                    LOGGER.error(
+                            "Player history at {} is damaged or unsupported. "
+                                    + "It will be backed up and rebuilt.",
+                            historyFile,
+                            exception
+                    );
+
+                    backUpDamagedHistory(historyFile);
+                }
             }
 
             Set<UUID> existingPlayers =
-                    findExistingPlayers(worldRoot.resolve("playerdata"));
+                    findExistingPlayers(
+                            worldRoot.resolve("playerdata")
+                    );
 
             PlayerHistoryService service =
-                    new PlayerHistoryService(historyFile, existingPlayers);
+                    new PlayerHistoryService(
+                            historyFile,
+                            existingPlayers
+                    );
 
             service.save();
 
@@ -117,11 +142,84 @@ public final class PlayerHistoryService {
 
             return service;
         } catch (IOException exception) {
-            throw new IllegalStateException(
-                    "Unable to load player history from " + historyFile,
+            LOGGER.error(
+                    "Unable to initialize persistent player history. "
+                            + "The server will continue with temporary "
+                            + "in-memory history.",
                     exception
             );
+
+            Set<UUID> fallbackPlayers = new HashSet<>();
+
+            try {
+                fallbackPlayers.addAll(
+                        findExistingPlayers(
+                                worldRoot.resolve("playerdata")
+                        )
+                );
+            } catch (IOException scanException) {
+                LOGGER.error(
+                        "Unable to scan existing Minecraft playerdata",
+                        scanException
+                );
+            }
+
+            return new PlayerHistoryService(
+                    historyFile,
+                    fallbackPlayers
+            );
         }
+    }
+
+    private static void validateHistoryData(HistoryData data) {
+        if (data == null) {
+            throw new IllegalArgumentException(
+                    "Player history cannot be empty"
+            );
+        }
+
+        if (data.schemaVersion != 1) {
+            throw new IllegalArgumentException(
+                    "Unsupported player history schemaVersion: "
+                            + data.schemaVersion
+            );
+        }
+
+        if (data.players == null) {
+            throw new IllegalArgumentException(
+                    "Player history is missing the players collection"
+            );
+        }
+
+        if (data.players.contains(null)) {
+            throw new IllegalArgumentException(
+                    "Player history contains a null UUID"
+            );
+        }
+    }
+
+    private static void backUpDamagedHistory(
+            Path historyFile
+    ) throws IOException {
+        String backupName =
+                historyFile.getFileName()
+                        + ".corrupt-"
+                        + System.currentTimeMillis()
+                        + ".bak";
+
+        Path backupFile =
+                historyFile.resolveSibling(backupName);
+
+        Files.move(
+                historyFile,
+                backupFile,
+                StandardCopyOption.REPLACE_EXISTING
+        );
+
+        LOGGER.warn(
+                "Backed up damaged player history to {}",
+                backupFile
+        );
     }
 
     private static Set<UUID> findExistingPlayers(Path playerDataDirectory)
