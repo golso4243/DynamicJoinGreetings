@@ -3,25 +3,18 @@
 	"id": "dynamic-join-greetings",
 	"version": "${version}",
 	"name": "Dynamic Join Greetings",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Randomized and configurable first-time and returning-player greetings for Fabric servers.",
 	"authors": [
-		"Me!"
+		"SwornHero"
 	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/dynamic-join-greetings/icon.png",
-	"environment": "*",
+	"environment": "server",
 	"entrypoints": {
 		"main": [
 			"com.swornhero.dynamicjoingreetings.DynamicJoinGreetings"
 		]
 	},
-	"mixins": [
-		"dynamic-join-greetings.mixins.json"
-	],
 	"depends": {
 		"fabricloader": ">=0.19.5",
 		"minecraft": "~26.2",
