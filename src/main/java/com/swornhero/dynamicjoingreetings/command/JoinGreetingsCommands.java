@@ -48,6 +48,10 @@ public final class JoinGreetingsCommands {
                                                 Commands.literal("reload")
                                                         .executes(JoinGreetingsCommands::reload)
                                         )
+                                        .then(
+                                                Commands.literal("status")
+                                                        .executes(JoinGreetingsCommands::status)
+                                        )
                         )
         );
     }
@@ -81,6 +85,107 @@ public final class JoinGreetingsCommands {
         return Command.SINGLE_SUCCESS;
     }
 
+    private static int status(
+            CommandContext<CommandSourceStack> context
+    ) {
+        DynamicJoinGreetingsConfig config = ConfigManager.get();
+
+        sendStatusLine(
+                context,
+                "Dynamic Join Greetings Status"
+        );
+
+        sendStatusLine(
+                context,
+                "Enabled: " + config.enabled
+        );
+
+        sendStatusLine(
+                context,
+                "Server name: " + config.serverName
+        );
+
+        sendStatusLine(
+                context,
+                "Delay: " + config.delayTicks
+                        + " ticks ("
+                        + String.format("%.2f", config.delayTicks / 20.0)
+                        + " seconds)"
+        );
+
+        sendStatusLine(
+                context,
+                "Selection mode: " + config.selection.mode
+        );
+
+        sendStatusLine(
+                context,
+                "Avoid immediate repeats: "
+                        + config.selection.avoidImmediateRepeats
+        );
+
+        sendStatusLine(
+                context,
+                "Remember per player: "
+                        + config.selection.rememberPerPlayer
+        );
+
+        sendStatusLine(
+                context,
+                "First join: "
+                        + poolDescription(config.firstJoin)
+        );
+
+        sendStatusLine(
+                context,
+                "Returning join: "
+                        + poolDescription(config.returningJoin)
+        );
+
+        sendStatusLine(
+                context,
+                "First join pool: enabled="
+                        + config.firstJoin.enabled
+                        + ", audience="
+                        + config.firstJoin.audience
+                        + ", messages="
+                        + config.firstJoin.messages.size()
+        );
+
+        sendStatusLine(
+                context,
+                "Returning pool: enabled="
+                        + config.returningJoin.enabled
+                        + ", audience="
+                        + config.returningJoin.audience
+                        + ", messages="
+                        + config.returningJoin.messages.size()
+        );
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static String poolDescription(
+            DynamicJoinGreetingsConfig.MessagePool pool
+    ) {
+        int messageCount =
+                pool.messages == null ? 0 : pool.messages.size();
+
+        return "enabled=" + pool.enabled
+                + ", audience=" + pool.audience
+                + ", messages=" + messageCount;
+    }
+
+    private static void sendStatusLine(
+            CommandContext<CommandSourceStack> context,
+            String message
+    ) {
+        context.getSource().sendSuccess(
+                () -> net.minecraft.network.chat.Component.literal(message),
+                false
+        );
+    }
+
     private static int preview(
             CommandContext<CommandSourceStack> context,
             boolean firstTime
@@ -100,8 +205,26 @@ public final class JoinGreetingsCommands {
             return 0;
         }
 
+        String previewPoolName = firstTime
+                ? "preview:firstJoin"
+                : "preview:returningJoin";
+
         DynamicJoinGreetingsConfig.MessageEntry message =
-                pool.messages.getFirst();
+                MessageSelector.select(
+                        previewPoolName,
+                        pool,
+                        config.selection,
+                        player.getUUID()
+                );
+
+        if (message == null) {
+            player.sendMessage(Component.text(
+                    "No message could be selected.",
+                    NamedTextColor.RED
+            ));
+
+            return 0;
+        }
 
         String playerName = player.getName().getString();
 
