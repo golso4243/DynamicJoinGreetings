@@ -14,6 +14,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.server.permissions.PermissionLevel;
 import net.minecraft.server.level.ServerPlayer;
 import com.swornhero.dynamicjoingreetings.message.MessageSelector;
+import com.swornhero.dynamicjoingreetings.greeting.GreetingService;
 
 public final class JoinGreetingsCommands {
     private JoinGreetingsCommands() {
@@ -51,6 +52,21 @@ public final class JoinGreetingsCommands {
                                         .then(
                                                 Commands.literal("status")
                                                         .executes(JoinGreetingsCommands::status)
+                                        )
+                                        .then(
+                                                Commands.literal("simulate")
+                                                        .then(
+                                                                Commands.literal("first")
+                                                                        .executes(context ->
+                                                                                simulate(context, true)
+                                                                        )
+                                                        )
+                                                        .then(
+                                                                Commands.literal("returning")
+                                                                        .executes(context ->
+                                                                                simulate(context, false)
+                                                                        )
+                                                        )
                                         )
                         )
         );
@@ -184,6 +200,43 @@ public final class JoinGreetingsCommands {
                 () -> net.minecraft.network.chat.Component.literal(message),
                 false
         );
+    }
+
+    private static int simulate(
+            CommandContext<CommandSourceStack> context,
+            boolean firstTime
+    ) throws CommandSyntaxException {
+        ServerPlayer player =
+                context.getSource().getPlayerOrException();
+
+        boolean scheduled = GreetingService.simulateJoin(
+                context.getSource().getServer(),
+                player.getUUID(),
+                firstTime
+        );
+
+        if (!scheduled) {
+            player.sendMessage(Component.text(
+                    "That greeting cannot be simulated because "
+                            + "the mod or message pool is disabled.",
+                    NamedTextColor.RED
+            ));
+
+            return 0;
+        }
+
+        DynamicJoinGreetingsConfig config = ConfigManager.get();
+
+        player.sendMessage(Component.text(
+                "Scheduled "
+                        + (firstTime ? "first-time" : "returning")
+                        + " greeting simulation in "
+                        + config.delayTicks
+                        + " ticks.",
+                NamedTextColor.GREEN
+        ));
+
+        return Command.SINGLE_SUCCESS;
     }
 
     private static int preview(

@@ -44,7 +44,7 @@ public final class GreetingService {
                             firstJoin ? "first-time" : "returning"
                     );
 
-                    scheduleGreeting(server, playerId, firstJoin);
+                    scheduleGreeting(server, playerId, firstJoin, false);
                 }
         );
 
@@ -58,15 +58,29 @@ public final class GreetingService {
         });
     }
 
-    private static void scheduleGreeting(
+    public static boolean simulateJoin(
             MinecraftServer server,
             UUID playerId,
             boolean firstJoin
     ) {
+        return scheduleGreeting(
+                server,
+                playerId,
+                firstJoin,
+                true
+        );
+    }
+
+    private static boolean scheduleGreeting(
+            MinecraftServer server,
+            UUID playerId,
+            boolean firstJoin,
+            boolean simulation
+    ) {
         DynamicJoinGreetingsConfig config = ConfigManager.get();
 
         if (!config.enabled) {
-            return;
+            return false;
         }
 
         DynamicJoinGreetingsConfig.MessagePool pool =
@@ -75,23 +89,27 @@ public final class GreetingService {
                         : config.returningJoin;
 
         if (!pool.enabled || pool.messages.isEmpty()) {
-            return;
+            return false;
         }
 
         PENDING_GREETINGS.removeIf(greeting ->
                 greeting.playerId.equals(playerId)
+                        && greeting.simulation == simulation
         );
 
         if (config.delayTicks == 0) {
-            sendGreeting(server, playerId, firstJoin);
-            return;
+            sendGreeting(server, playerId, firstJoin, simulation);
+            return true;
         }
 
         PENDING_GREETINGS.add(new PendingGreeting(
                 playerId,
                 firstJoin,
-                config.delayTicks
+                config.delayTicks,
+                simulation
         ));
+
+        return true;
     }
 
     private static void processPendingGreetings(
@@ -110,7 +128,8 @@ public final class GreetingService {
                 sendGreeting(
                         server,
                         greeting.playerId,
-                        greeting.firstJoin
+                        greeting.firstJoin,
+                        greeting.simulation
                 );
             }
         }
@@ -119,7 +138,8 @@ public final class GreetingService {
     private static void sendGreeting(
             MinecraftServer server,
             UUID playerId,
-            boolean firstJoin
+            boolean firstJoin,
+            boolean simulation
     ) {
         ServerPlayer joiningPlayer =
                 server.getPlayerList().getPlayer(playerId);
@@ -145,7 +165,13 @@ public final class GreetingService {
 
         DynamicJoinGreetingsConfig.MessageEntry message =
                 MessageSelector.select(
-                        firstJoin ? "firstJoin" : "returningJoin",
+                        simulation
+                                ? firstJoin
+                                        ? "simulation:firstJoin"
+                                        : "simulation:returningJoin"
+                                : firstJoin
+                                        ? "firstJoin"
+                                        : "returningJoin",
                         pool,
                         config.selection,
                         playerId
@@ -174,7 +200,8 @@ public final class GreetingService {
         }
 
         LOGGER.info(
-                "Sent greeting '{}' to {}",
+                "{} greeting '{}' to {}",
+                simulation ? "Simulated" : "Sent",
                 message.id,
                 playerName
         );
@@ -212,16 +239,19 @@ public final class GreetingService {
     private static final class PendingGreeting {
         private final UUID playerId;
         private final boolean firstJoin;
+        private final boolean simulation;
         private int ticksRemaining;
 
         private PendingGreeting(
                 UUID playerId,
                 boolean firstJoin,
-                int ticksRemaining
+                int ticksRemaining,
+                boolean simulation
         ) {
             this.playerId = playerId;
             this.firstJoin = firstJoin;
             this.ticksRemaining = ticksRemaining;
+            this.simulation = simulation;
         }
     }
 }
