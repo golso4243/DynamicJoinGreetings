@@ -12,6 +12,13 @@ repositories {
 	mavenCentral()
 }
 
+configurations {
+	productionTestMods {
+		canBeConsumed = false
+		canBeResolved = true
+	}
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -25,6 +32,8 @@ dependencies {
 
 	testImplementation "org.junit.jupiter:junit-jupiter:6.1.3"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
+	productionTestMods "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 test {
@@ -61,6 +70,34 @@ jar {
 	from("LICENSE") {
 		rename { "${it}_$projectName"}
 	}
+}
+
+def packagedJar = tasks.named("jar")
+
+tasks.register(
+		"prodServer",
+		net.fabricmc.loom.task.prod.ServerProductionRunTask
+) {
+	group = "fabric"
+	description = "Runs the packaged mod in a production-like Fabric server"
+
+	dependsOn(packagedJar)
+
+	installerVersion = "1.1.2"
+	loaderVersion = project.loader_version
+	minecraftVersion = project.minecraft_version
+
+	runDir = file("run-production")
+
+	mods.from(
+			packagedJar.flatMap { task ->
+				task.archiveFile
+			}
+	)
+
+	mods.from(configurations.productionTestMods)
+
+	programArgs.add("nogui")
 }
 
 // configure the maven publication
