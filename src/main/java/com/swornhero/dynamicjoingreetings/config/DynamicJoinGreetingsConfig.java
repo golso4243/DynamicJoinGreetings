@@ -1,9 +1,19 @@
 package com.swornhero.dynamicjoingreetings.config;
 
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class DynamicJoinGreetingsConfig {
+    private static final String DEFAULT_CONFIG_RESOURCE =
+            "/default-dynamic-join-greetings.json";
+
     public int configVersion;
     public boolean enabled;
     public String serverName;
@@ -14,65 +24,41 @@ public final class DynamicJoinGreetingsConfig {
     public MessagePool returningJoin;
 
     public static DynamicJoinGreetingsConfig createDefault() {
-        DynamicJoinGreetingsConfig config = new DynamicJoinGreetingsConfig();
+        try (InputStream stream = DynamicJoinGreetingsConfig.class
+                .getResourceAsStream(DEFAULT_CONFIG_RESOURCE)) {
+            if (stream == null) {
+                throw new IllegalStateException(
+                        "Bundled default configuration is missing: "
+                                + DEFAULT_CONFIG_RESOURCE
+                );
+            }
 
-        config.configVersion = 1;
-        config.enabled = true;
-        config.serverName = "Minecraft Server";
-        config.delayTicks = 40;
+            try (Reader reader = new InputStreamReader(
+                    stream,
+                    StandardCharsets.UTF_8
+            )) {
+                DynamicJoinGreetingsConfig config =
+                        new Gson().fromJson(
+                                reader,
+                                DynamicJoinGreetingsConfig.class
+                        );
 
-        config.selection = new SelectionSettings();
-        config.selection.mode = SelectionMode.SHUFFLE_BAG;
-        config.selection.avoidImmediateRepeats = true;
-        config.selection.rememberPerPlayer = true;
+                if (config == null) {
+                    throw new IllegalStateException(
+                            "Bundled default configuration is empty: "
+                                    + DEFAULT_CONFIG_RESOURCE
+                    );
+                }
 
-        config.firstJoin = new MessagePool();
-        config.firstJoin.enabled = true;
-        config.firstJoin.audience = Audience.PLAYER;
-        config.firstJoin.messages.add(new MessageEntry(
-                "first_welcome",
-                1.0,
-                List.of(
-                        "<gold><bold>Welcome to {server}, {player}!</bold></gold>",
-                        "<gray>Your first adventure begins here.</gray>"
-                )
-        ));
-        config.firstJoin.messages.add(new MessageEntry(
-                "first_new_chapter",
-                1.0,
-                List.of(
-                        "<yellow>Welcome, {player}!</yellow>",
-                        "<gray>A new chapter awaits you on {server}.</gray>"
-                )
-        ));
-
-        config.returningJoin = new MessagePool();
-        config.returningJoin.enabled = true;
-        config.returningJoin.audience = Audience.PLAYER;
-        config.returningJoin.messages.add(new MessageEntry(
-                "return_welcome_back",
-                1.0,
-                List.of(
-                        "<gold>Welcome back, <yellow>{player}</yellow>!</gold>"
-                )
-        ));
-        config.returningJoin.messages.add(new MessageEntry(
-                "return_adventure",
-                1.0,
-                List.of(
-                        "<yellow>Another adventure awaits, {player}!</yellow>"
-                )
-        ));
-        config.returningJoin.messages.add(new MessageEntry(
-                "return_home",
-                1.0,
-                List.of(
-                        "<gold>Welcome home, {player}.</gold>",
-                        "<gray>It is good to see you again on {server}.</gray>"
-                )
-        ));
-
-        return config;
+                return config;
+            }
+        } catch (IOException exception) {
+            throw new IllegalStateException(
+                    "Could not read bundled default configuration: "
+                            + DEFAULT_CONFIG_RESOURCE,
+                    exception
+            );
+        }
     }
 
     public enum SelectionMode {

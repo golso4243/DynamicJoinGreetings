@@ -2,6 +2,17 @@
 
 All notable changes to Dynamic Join Greetings are documented here.
 
+## [1.0.4+26.2] - 2026-09-09
+
+### Fixed
+
+- Added the complete advertised default catalog of 10 first-time greetings and 50 returning-player greetings.
+
+### Changed
+
+- Moved the generated default configuration into a bundled JSON resource for easier maintenance.
+- Added regression tests for default message counts and unique message IDs.
+
 ## [1.0.2+26.2] - 2026-09-09
 
 ### Fixed
