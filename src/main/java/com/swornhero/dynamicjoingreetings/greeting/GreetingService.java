@@ -8,7 +8,7 @@ import com.swornhero.dynamicjoingreetings.player.PlayerHistoryService;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.kyori.adventure.text.Component;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
@@ -214,7 +214,7 @@ public final class GreetingService {
             Component message
     ) {
         switch (audience) {
-            case PLAYER -> joiningPlayer.sendMessage(message);
+            case PLAYER -> joiningPlayer.sendSystemMessage(message);
 
             case BROADCAST -> server.getPlayerList()
                     .getPlayers()
@@ -225,13 +225,13 @@ public final class GreetingService {
                             )
                     )
                     .forEach(player ->
-                            player.sendMessage(message)
+                            player.sendSystemMessage(message)
                     );
 
             case BOTH -> server.getPlayerList()
                     .getPlayers()
                     .forEach(player ->
-                            player.sendMessage(message)
+                            player.sendSystemMessage(message)
                     );
         }
     }

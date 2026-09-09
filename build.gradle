@@ -10,6 +10,11 @@ repositories {
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
 	mavenCentral()
+
+	maven {
+		url "https://maven.nucleoid.xyz/"
+		name "Nucleoid"
+	}
 }
 
 configurations {
@@ -27,8 +32,7 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	implementation 'net.kyori:adventure-platform-fabric:7.1.1'
-	include 'net.kyori:adventure-platform-fabric:7.1.1'
+	implementation include("eu.pb4:placeholder-api:3.1.0-beta.1+26.2")
 
 	testImplementation "org.junit.jupiter:junit-jupiter:6.1.3"
 	testRuntimeOnly "org.junit.platform:junit-platform-launcher"

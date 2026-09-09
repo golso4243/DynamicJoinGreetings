@@ -234,7 +234,7 @@ public final class ConfigManager {
                     throw new IllegalArgumentException(
                             poolName + "." + message.id
                                     + ".lines[" + lineIndex + "]"
-                                    + " contains invalid MiniMessage formatting: "
+                                    + " contains invalid message formatting: "
                                     + exception.getMessage(),
                             exception
                     );

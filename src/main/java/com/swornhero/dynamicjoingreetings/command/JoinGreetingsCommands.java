@@ -7,8 +7,8 @@ import com.swornhero.dynamicjoingreetings.config.DynamicJoinGreetingsConfig;
 import com.swornhero.dynamicjoingreetings.message.MessageRenderer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.permissions.PermissionLevel;
@@ -216,25 +216,27 @@ public final class JoinGreetingsCommands {
         );
 
         if (!scheduled) {
-            player.sendMessage(Component.text(
-                    "That greeting cannot be simulated because "
-                            + "the mod or message pool is disabled.",
-                    NamedTextColor.RED
-            ));
+            player.sendSystemMessage(
+                    Component.literal(
+                            "That greeting cannot be simulated because "
+                                    + "the mod or message pool is disabled."
+                    ).withStyle(ChatFormatting.RED)
+            );
 
             return 0;
         }
 
         DynamicJoinGreetingsConfig config = ConfigManager.get();
 
-        player.sendMessage(Component.text(
-                "Scheduled "
-                        + (firstTime ? "first-time" : "returning")
-                        + " greeting simulation in "
-                        + config.delayTicks
-                        + " ticks.",
-                NamedTextColor.GREEN
-        ));
+        player.sendSystemMessage(
+                Component.literal(
+                        "Scheduled "
+                                + (firstTime ? "first-time" : "returning")
+                                + " greeting simulation in "
+                                + config.delayTicks
+                                + " ticks."
+                ).withStyle(ChatFormatting.GREEN)
+        );
 
         return Command.SINGLE_SUCCESS;
     }
@@ -243,7 +245,9 @@ public final class JoinGreetingsCommands {
             CommandContext<CommandSourceStack> context,
             boolean firstTime
     ) throws CommandSyntaxException {
-        ServerPlayer player = context.getSource().getPlayerOrException();
+        ServerPlayer player =
+                context.getSource().getPlayerOrException();
+
         DynamicJoinGreetingsConfig config = ConfigManager.get();
 
         DynamicJoinGreetingsConfig.MessagePool pool = firstTime
@@ -251,10 +255,12 @@ public final class JoinGreetingsCommands {
                 : config.returningJoin;
 
         if (pool.messages == null || pool.messages.isEmpty()) {
-            player.sendMessage(Component.text(
-                    "That message pool contains no messages.",
-                    NamedTextColor.RED
-            ));
+            player.sendSystemMessage(
+                    Component.literal(
+                            "That message pool contains no messages."
+                    ).withStyle(ChatFormatting.RED)
+            );
+
             return 0;
         }
 
@@ -271,10 +277,11 @@ public final class JoinGreetingsCommands {
                 );
 
         if (message == null) {
-            player.sendMessage(Component.text(
-                    "No message could be selected.",
-                    NamedTextColor.RED
-            ));
+            player.sendSystemMessage(
+                    Component.literal(
+                            "No message could be selected."
+                    ).withStyle(ChatFormatting.RED)
+            );
 
             return 0;
         }
@@ -282,11 +289,13 @@ public final class JoinGreetingsCommands {
         String playerName = player.getName().getString();
 
         for (String line : message.lines) {
-            player.sendMessage(MessageRenderer.render(
-                    line,
-                    playerName,
-                    config.serverName
-            ));
+            player.sendSystemMessage(
+                    MessageRenderer.render(
+                            line,
+                            playerName,
+                            config.serverName
+                    )
+            );
         }
 
         return Command.SINGLE_SUCCESS;

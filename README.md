@@ -2,7 +2,7 @@
 
 Dynamic Join Greetings is a server-side Fabric mod that sends configurable messages when players join a Minecraft server.
 
-It supports separate greetings for first-time and returning players, weighted random selection, repeat prevention, shuffle bags, configurable audiences, delayed delivery, MiniMessage formatting, and safe player/server placeholders.
+It supports separate greetings for first-time and returning players, weighted random selection, repeat prevention, shuffle bags, configurable audiences, delayed delivery, Simplified Text Format, and safe player/server placeholders.
 
 ## Features
 
@@ -16,7 +16,7 @@ It supports separate greetings for first-time and returning players, weighted ra
 - Configurable message delay
 - Player-only, broadcast, or combined audiences
 - Multi-line messages
-- MiniMessage colors and formatting
+- Simplified Text Format colors and formatting
 - Safe `{player}` and `{server}` placeholders
 - Live configuration reloads
 - Preview, simulation, and status commands
@@ -30,7 +30,7 @@ It supports separate greetings for first-time and returning players, weighted ra
 - Fabric API 0.160.0 or newer for Minecraft 26.2
 - Java 25
 
-Adventure Platform for Fabric is bundled inside the mod.
+Placeholder API is bundled inside the mod and does not need to be installed separately.
 
 ## Installation
 
@@ -185,7 +185,7 @@ Each message entry contains:
 |---|---|
 | `id` | Unique identifier within its pool. |
 | `weight` | Relative selection weight. Must be greater than zero. |
-| `lines` | One or more MiniMessage-formatted lines. |
+| `lines` | One or more lines using Placeholder API’s Simplified Text Format. |
 
 Example weighted pool:
 
@@ -217,11 +217,11 @@ In weighted random selection, `common` is five times as likely to be selected as
 | `{player}` | Joining or previewing player’s current username |
 | `{server}` | Configured `serverName` |
 
-Placeholder values are inserted as literal text components. They cannot inject MiniMessage formatting, commands, hover events, or click events.
+Placeholder values are escaped before message parsing and treated as literal text. They cannot inject formatting tags, commands, hover events, or click events.
 
-## MiniMessage
+## Message formatting
 
-Message lines use Adventure MiniMessage formatting.
+Message lines use [Placeholder API’s Simplified Text Format](https://placeholders.pb4.eu/user/text-format/).
 
 Examples:
 
@@ -232,13 +232,9 @@ Examples:
 <rainbow>Rainbow text</rainbow>
 ```
 
-Formatting tags must be explicitly closed. Invalid formatting is rejected during startup or `/joingreetings reload`, and the previous valid configuration remains active.
+Most formatting tags can be explicitly closed with `</tag>` or automatically closed with `</>`. Although closing tags are optional, an unclosed style continues to the end of the message. Use `<reset>` when you need to close all active formatting.
 
-The strict validator does not permit `<reset>`. Close active tags explicitly instead.
-
-MiniMessage documentation:
-
-https://docs.papermc.io/adventure/minimessage/format/
+The available formatting includes named and RGB colors, text decorations, gradients, hover text, click actions, fonts, translations, and keybinds. Because configuration files are controlled by server administrators, interactive click and hover tags should only be added to trusted messages.
 
 ## Commands
 

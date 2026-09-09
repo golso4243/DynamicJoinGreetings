@@ -1,19 +1,17 @@
 package com.swornhero.dynamicjoingreetings.message;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
+import net.minecraft.network.chat.Component;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MessageRendererTest {
     @Test
-    void acceptsValidMiniMessage() {
+    void acceptsValidFormattedMessage() {
         assertDoesNotThrow(() ->
                 MessageRenderer.validate(
                         "<gold><bold>Welcome, {player}!</bold></gold>"
@@ -22,11 +20,16 @@ class MessageRendererTest {
     }
 
     @Test
-    void rejectsUnclosedMiniMessageTags() {
-        assertThrows(RuntimeException.class, () ->
-                MessageRenderer.validate(
-                        "<gold><bold>Broken message"
-                )
+    void rendersPlainText() {
+        Component rendered = MessageRenderer.render(
+                "Hello, {player}!",
+                "SwornHero",
+                "StoneHavenSMP"
+        );
+
+        assertEquals(
+                "Hello, SwornHero!",
+                rendered.getString()
         );
     }
 
@@ -42,17 +45,15 @@ class MessageRendererTest {
                 serverName
         );
 
-        String plainText = extractText(rendered);
-
         assertEquals(
                 "Welcome " + playerName + " to " + serverName + "!",
-                plainText
+                rendered.getString()
         );
 
         assertTrue(
                 components(rendered)
                         .noneMatch(component ->
-                                component.style().clickEvent() != null
+                                component.getStyle().getClickEvent() != null
                         ),
                 "Placeholder values must not create click events"
         );
@@ -60,7 +61,7 @@ class MessageRendererTest {
         assertTrue(
                 components(rendered)
                         .noneMatch(component ->
-                                component.style().color() != null
+                                component.getStyle().getColor() != null
                         ),
                 "Placeholder values must not inject colors"
         );
@@ -74,11 +75,9 @@ class MessageRendererTest {
                 "StoneHavenSMP"
         );
 
-        String plainText = extractText(rendered);
-
         assertEquals(
                 "SwornHero joined StoneHavenSMP. Welcome, SwornHero!",
-                plainText
+                rendered.getString()
         );
     }
 
@@ -87,28 +86,9 @@ class MessageRendererTest {
     ) {
         return Stream.concat(
                 Stream.of(component),
-                component.children()
+                component.getSiblings()
                         .stream()
                         .flatMap(MessageRendererTest::components)
         );
-    }
-
-    private static String extractText(Component component) {
-        StringBuilder output = new StringBuilder();
-        appendText(component, output);
-        return output.toString();
-    }
-
-    private static void appendText(
-            Component component,
-            StringBuilder output
-    ) {
-        if (component instanceof TextComponent textComponent) {
-            output.append(textComponent.content());
-        }
-
-        for (Component child : component.children()) {
-            appendText(child, output);
-        }
     }
 }

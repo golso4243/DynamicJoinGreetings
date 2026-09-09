@@ -2,6 +2,27 @@
 
 All notable changes to Dynamic Join Greetings are documented here.
 
+## [1.0.2+26.2] - 2026-09-09
+
+### Fixed
+
+- Fixed greetings, previews, and simulations failing to appear on servers containing Fabric Essentials Message API.
+- Fixed system-chat packet encoding failures caused by incompatible Adventure library versions.
+
+### Changed
+
+- Replaced Adventure Platform with Placeholder API.
+- Messages are now rendered as native Minecraft components.
+- Message formatting now uses Placeholder API's Simplified Text Format.
+- Updated the release version to identify Minecraft 26.2 compatibility.
+
+### Compatibility
+
+- Minecraft 26.2
+- Fabric Loader 0.19.3 or newer
+- Fabric API 0.160.0+26.2
+- Java 25
+
 ## [1.0.1] - 2026-09-09
 
 ### Changed
