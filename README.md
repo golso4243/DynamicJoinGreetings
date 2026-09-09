@@ -26,7 +26,7 @@ It supports separate greetings for first-time and returning players, weighted ra
 ## Requirements
 
 - Minecraft Java Edition 26.2
-- Fabric Loader 0.19.5 or newer
+- Fabric Loader 0.19.3 or newer
 - Fabric API 0.160.0 or newer for Minecraft 26.2
 - Java 25
 

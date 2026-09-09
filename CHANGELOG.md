@@ -2,6 +2,14 @@
 
 All notable changes to Dynamic Join Greetings are documented here.
 
+## [1.0.1] - 2026-09-09
+
+### Changed
+
+- Lowered the minimum Fabric Loader requirement from 0.19.5 to 0.19.3.
+- Verified compatibility with Fabric Loader 0.19.3 and Fabric API 0.160.0+26.2.
+- No gameplay or configuration behavior was changed.
+
 ## [1.0.0] - 2026-09-09
 
 ### Added
