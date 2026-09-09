@@ -13,6 +13,14 @@ All notable changes to Dynamic Join Greetings are documented here.
 - Moved the generated default configuration into a bundled JSON resource for easier maintenance.
 - Added regression tests for default message counts and unique message IDs.
 
+## [1.0.3+26.2] - 2026-09-09
+
+### Changed
+
+- Replaced the mod icon with original, manually created artwork.
+- Prepared the project for its first Modrinth release.
+- Retained native Minecraft component delivery through the bundled Placeholder API.
+
 ## [1.0.2+26.2] - 2026-09-09
 
 ### Fixed
