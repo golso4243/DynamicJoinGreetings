@@ -54,7 +54,7 @@ Clients do not need to install Dynamic Join Greetings.
 
 ## Configuration
 
-The default configuration looks similar to this:
+The generated configuration contains 10 first-time greetings and 50 returning-player greetings. The shortened example below shows the structure:
 
 ```json
 {
